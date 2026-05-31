@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>ClaimPilot — Insurance Assistant</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+
+  <!-- Auth Screen -->
+  <div id="auth-screen" class="screen">
+    <div class="auth-card">
+      <div class="logo">
+        <span class="logo-icon">🛡️</span>
+        <h1>ClaimPilot</h1>
+        <p>Your personal insurance assistant</p>
+      </div>
+
+      <div class="auth-tabs">
+        <button class="tab-btn active" onclick="switchTab('login')">Log In</button>
+        <button class="tab-btn" onclick="switchTab('register')">Register</button>
+      </div>
+
+      <form id="login-form" class="auth-form" onsubmit="handleLogin(event)">
+        <input type="email" id="login-email" placeholder="Email address" required />
+        <input type="password" id="login-password" placeholder="Password" required />
+        <button type="submit" class="btn-primary">Log In</button>
+      </form>
+
+      <form id="register-form" class="auth-form hidden" onsubmit="handleRegister(event)">
+        <input type="text" id="reg-name" placeholder="Full name" required />
+        <input type="email" id="reg-email" placeholder="Email address" required />
+        <input type="password" id="reg-password" placeholder="Password" required />
+        <button type="submit" class="btn-primary">Create Account</button>
+      </form>
+
+      <p id="auth-error" class="error-msg hidden"></p>
+    </div>
+  </div>
+
+  <!-- Chat Screen -->
+  <div id="chat-screen" class="screen hidden">
+
+    <header class="chat-header">
+      <div class="header-left">
+        <span class="logo-icon">🛡️</span>
+        <div>
+          <h2>ClaimPilot</h2>
+          <span class="status-dot active"></span>
+          <span class="header-status">Online</span>
+        </div>
+      </div>
+      <div class="header-right">
+        <div id="case-badge" class="case-badge hidden"></div>
+        <button class="btn-ghost" onclick="logout()">Log out</button>
+      </div>
+    </header>
+
+    <main class="chat-main">
+      <div id="messages" class="messages"></div>
+
+      <div id="typing-indicator" class="typing-indicator hidden">
+        <span></span><span></span><span></span>
+      </div>
+    </main>
+
+    <footer class="chat-footer">
+      <div id="upload-area" class="upload-area hidden">
+        <label for="file-input" class="upload-label">
+          <span class="upload-icon">📎</span>
+          <span id="upload-text">Drag & drop PDF or click to browse</span>
+        </label>
+        <input type="file" id="file-input" accept=".pdf" onchange="handleFileSelect(event)" />
+      </div>
+
+      <div class="input-row">
+        <button class="btn-icon" onclick="toggleUpload()" title="Attach PDF">📎</button>
+        <input
+          type="text"
+          id="message-input"
+          placeholder="Type your message..."
+          onkeydown="handleKeyDown(event)"
+          autocomplete="off"
+        />
+        <button class="btn-primary send-btn" onclick="sendMessage()">Send</button>
+      </div>
+    </footer>
+
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>

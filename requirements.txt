@@ -25,12 +25,16 @@ pytesseract==0.3.13
 Pillow==11.2.1
 
 # Web Framework
-fastapi==0.115.12
+fastapi==0.115.9
 uvicorn==0.34.2
 
 # Guardrails
+# NOTE: nemoguardrails requires Microsoft C++ Build Tools (for annoy dependency).
+# Install Build Tools from https://visualstudio.microsoft.com/visual-cpp-build-tools/
+# then run: pip install nemoguardrails==0.11.0
 nemoguardrails==0.11.0
 
 # Utilities
 python-dotenv==1.1.0
 pydantic==2.11.4
+python-multipart==0.0.29

@@ -1,0 +1,52 @@
+define user ask off topic
+  "what is the weather"
+  "help me write an email"
+  "tell me a joke"
+  "what is the stock price"
+  "recommend a restaurant"
+
+define bot refuse off topic
+  "I'm sorry, I can only assist with insurance-related queries. For other concerns, please reach out to the appropriate service. Is there anything related to your insurance claim I can help you with?"
+
+define flow check insurance topic
+  user ask off topic
+  bot refuse off topic
+  stop
+
+define user ask medical advice
+  "what medicine should I take"
+  "is my diagnosis serious"
+  "what treatment do you recommend"
+
+define bot refuse medical advice
+  "I'm not able to provide medical advice. For medical guidance, please consult a qualified doctor. I can help you with the documentation required for your health insurance claim."
+
+define flow check medical advice
+  user ask medical advice
+  bot refuse medical advice
+  stop
+
+define user ask investment advice
+  "which insurance policy should I buy"
+  "compare insurance plans"
+  "which insurer is best"
+
+define bot refuse investment advice
+  "I'm not able to recommend specific insurance products or companies. For policy comparisons, please visit your insurer's website or consult an IRDAI-registered insurance advisor."
+
+define flow check investment advice
+  user ask investment advice
+  bot refuse investment advice
+  stop
+
+define flow check output for hallucination
+  $output = execute check_hallucination(response=$bot_response)
+  if $output.has_hallucination
+    bot say "I want to make sure I give you accurate information. Based on the documents I have, I cannot confirm that detail. Please verify this directly with your insurer."
+    stop
+
+define flow check output for non-indian regulations
+  $output = execute check_jurisdiction(response=$bot_response)
+  if $output.non_indian
+    bot say "I can only provide guidance based on Indian insurance regulations and IRDAI guidelines."
+    stop
