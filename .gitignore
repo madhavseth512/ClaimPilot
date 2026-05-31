@@ -1,0 +1,40 @@
+# Environment
+.env
+
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+.Python
+venv/
+env/
+.venv/
+*.egg-info/
+dist/
+build/
+
+# ChromaDB local persistence
+chroma_db/
+chroma_data/
+
+# IRDAI source PDFs (large binary files)
+knowledge_base/irdai_docs/*.pdf
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Alembic
+# (keep migrations, exclude pyc inside them)
+alembic/versions/__pycache__/
+
+# Logs
+*.log
+logs/

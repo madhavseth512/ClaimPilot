@@ -1,0 +1,36 @@
+# ClaimPilot — Python Dependencies
+
+# LLM & Orchestration
+langchain==0.3.25
+langchain-groq==0.3.2
+langchain-community==0.3.23
+langgraph==0.4.8
+groq==0.28.0
+
+# Embeddings (runs locally — no API required)
+sentence-transformers==4.1.0
+
+# Vector Store
+chromadb==1.0.8
+
+# Database
+psycopg2-binary==2.9.10
+sqlalchemy==2.0.41
+alembic==1.16.1
+
+# PDF Processing
+pdfplumber==0.11.6
+PyPDF2==3.0.1
+pytesseract==0.3.13
+Pillow==11.2.1
+
+# Web Framework
+fastapi==0.115.12
+uvicorn==0.34.2
+
+# Guardrails
+nemoguardrails==0.11.0
+
+# Utilities
+python-dotenv==1.1.0
+pydantic==2.11.4
