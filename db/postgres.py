@@ -73,3 +73,8 @@ def get_db():
         yield db
     finally:
         db.close()
+
+
+def get_checkpointer():
+    from langgraph.checkpoint.postgres import PostgresSaver
+    return PostgresSaver.from_conn_string(DATABASE_URL)
