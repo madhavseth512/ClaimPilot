@@ -14,9 +14,10 @@ env/
 dist/
 build/
 
-# ChromaDB local persistence
+# ChromaDB local persistence (any path set in CHROMA_PERSIST_PATH)
 chroma_db/
 chroma_data/
+chroma_store/
 
 # IRDAI source PDFs (large binary files)
 knowledge_base/irdai_docs/*.pdf
