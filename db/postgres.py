@@ -75,6 +75,19 @@ def get_db():
         db.close()
 
 
+_checkpointer = None
+_checkpointer_cm = None
+
+
 def get_checkpointer():
-    from langgraph.checkpoint.postgres import PostgresSaver
-    return PostgresSaver.from_conn_string(DATABASE_URL)
+    """
+    Returns a module-level singleton PostgresSaver.
+    Enters the context manager once and keeps the connection alive
+    for the lifetime of the process.
+    """
+    global _checkpointer, _checkpointer_cm
+    if _checkpointer is None:
+        from langgraph.checkpoint.postgres import PostgresSaver
+        _checkpointer_cm = PostgresSaver.from_conn_string(DATABASE_URL)
+        _checkpointer = _checkpointer_cm.__enter__()
+    return _checkpointer
