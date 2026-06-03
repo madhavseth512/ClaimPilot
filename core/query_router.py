@@ -1,3 +1,4 @@
+import json
 import os
 from groq import Groq
 from dotenv import load_dotenv
@@ -29,13 +30,42 @@ Respond ONLY in this JSON format:
 CONFIDENCE_THRESHOLD = float(os.getenv("QUERY_ROUTER_CONFIDENCE_THRESHOLD", 0.75))
 
 
+def _strip_code_fences(text: str) -> str:
+    if text.startswith("```"):
+        lines = text.split("\n")
+        lines = lines[1:] if lines[-1].strip() == "```" else lines[1:]
+        text = "\n".join(lines)
+    return text.strip()
+
+
 class QueryRouter:
     def __init__(self):
         self.client = Groq(api_key=os.getenv("GROQ_API_KEY"))
         self.model = os.getenv("GROQ_MODEL", "llama-3.1-8b-instant")
 
     def route(self, query: str) -> dict:
-        raise NotImplementedError("Implemented in Phase 5")
+        """
+        Returns {"category": str, "confidence": float, "reasoning": str}.
+        Categories: personal_doc | general_insurance | ambiguous | off_topic.
+        On failure returns category="ambiguous" with confidence=0.0.
+        """
+        try:
+            response = self.client.chat.completions.create(
+                model=self.model,
+                messages=[
+                    {"role": "system", "content": QUERY_ROUTER_PROMPT},
+                    {"role": "user", "content": query},
+                ],
+                temperature=0.1,
+                max_tokens=150,
+            )
+            content = response.choices[0].message.content.strip()
+            content = _strip_code_fences(content)
+            return json.loads(content)
+        except json.JSONDecodeError:
+            return {"category": "ambiguous", "confidence": 0.0, "reasoning": "Could not parse routing response."}
+        except Exception as e:
+            return {"category": "ambiguous", "confidence": 0.0, "reasoning": str(e)}
 
     def is_confident(self, result: dict) -> bool:
         return result.get("confidence", 0) >= CONFIDENCE_THRESHOLD

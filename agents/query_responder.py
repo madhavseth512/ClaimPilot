@@ -1,6 +1,6 @@
 import os
 from groq import Groq
-from db.chroma import get_chroma_client, get_user_collection, get_irdai_collection, query_collection
+from db.chroma import query_user_collection, query_irdai_collection
 from core.embedding_generator import EmbeddingGenerator
 from dotenv import load_dotenv
 
@@ -39,11 +39,65 @@ class QueryResponder:
     def respond_from_user_docs(
         self, query: str, user_id: str, case_id: str, conversation_history: list
     ) -> str:
-        """RAG over user's ChromaDB collection. Implemented in Phase 5."""
-        raise NotImplementedError("Implemented in Phase 5")
+        """RAG over the user's ChromaDB collection for the given case."""
+        query_embedding = self.embedder.embed_single(query)
+        results = query_user_collection(user_id, query_embedding, case_id=case_id, n_results=5)
+
+        docs = results.get("documents", [[]])[0]
+        metadatas = results.get("metadatas", [[]])[0]
+
+        if docs:
+            context_parts = [
+                f"[Document: {meta.get('filename', 'uploaded document')}]\n{doc}"
+                for doc, meta in zip(docs, metadatas)
+            ]
+            context = "\n\n".join(context_parts)
+        else:
+            context = "No documents have been uploaded for this case yet."
+
+        system = f"{SYSTEM_PROMPT}\n\nThe following is extracted from the user's uploaded documents:\n\n{context}"
+
+        messages = [{"role": "system", "content": system}]
+        messages.extend(conversation_history)
+        messages.append({"role": "user", "content": query})
+
+        response = self.client.chat.completions.create(
+            model=self.model,
+            messages=messages,
+            temperature=0.3,
+            max_tokens=1024,
+        )
+        return response.choices[0].message.content.strip()
 
     def respond_from_irdai(
         self, query: str, conversation_history: list
     ) -> str:
-        """RAG over IRDAI knowledge base. Implemented in Phase 5."""
-        raise NotImplementedError("Implemented in Phase 5")
+        """RAG over the IRDAI knowledge base with source citation."""
+        query_embedding = self.embedder.embed_single(query)
+        results = query_irdai_collection(query_embedding, n_results=5)
+
+        docs = results.get("documents", [[]])[0]
+        metadatas = results.get("metadatas", [[]])[0]
+
+        if docs:
+            context_parts = [
+                f"[Source: {meta.get('source_name', meta.get('source', 'IRDAI document'))}]\n{doc}"
+                for doc, meta in zip(docs, metadatas)
+            ]
+            context = "\n\n".join(context_parts)
+        else:
+            context = "No relevant IRDAI regulatory information found."
+
+        system = f"{SYSTEM_PROMPT}\n\nThe following is from official IRDAI regulatory documents:\n\n{context}"
+
+        messages = [{"role": "system", "content": system}]
+        messages.extend(conversation_history)
+        messages.append({"role": "user", "content": query})
+
+        response = self.client.chat.completions.create(
+            model=self.model,
+            messages=messages,
+            temperature=0.3,
+            max_tokens=1024,
+        )
+        return response.choices[0].message.content.strip()
