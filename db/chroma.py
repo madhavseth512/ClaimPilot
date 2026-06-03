@@ -78,6 +78,7 @@ def store_irdai_vectors(
     source_doc_name: str,
     chunks: List[dict],
     embeddings: List[List[float]],
+    source_display_name: str = None,
 ) -> int:
     """Store IRDAI knowledge base chunks. Used by ingest_irdai.py in Phase 4."""
     collection = get_irdai_collection()
@@ -87,6 +88,7 @@ def store_irdai_vectors(
     metadatas = [
         {
             "source": source_doc_name,
+            "source_name": source_display_name or source_doc_name,
             "chunk_index": c["chunk_index"],
         }
         for c in chunks
