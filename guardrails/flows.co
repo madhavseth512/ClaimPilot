@@ -1,9 +1,25 @@
+# ─── INPUT RAILS ──────────────────────────────────────────────────────────────
+# These flows run on every user message before LangGraph is invoked.
+# If a flow matches, the bot response is returned immediately — LangGraph never runs.
+
+# --- Off-topic check ---
+
 define user ask off topic
   "what is the weather"
-  "help me write an email"
+  "what is the weather today"
   "tell me a joke"
+  "help me write an email"
+  "write me a poem"
   "what is the stock price"
   "recommend a restaurant"
+  "what movies are showing"
+  "help me with my homework"
+  "what is the news today"
+  "translate this for me"
+  "help me code"
+  "who won the match"
+  "what is the capital of"
+  "tell me about history"
 
 define bot refuse off topic
   "I'm sorry, I can only assist with insurance-related queries. For other concerns, please reach out to the appropriate service. Is there anything related to your insurance claim I can help you with?"
@@ -13,40 +29,90 @@ define flow check insurance topic
   bot refuse off topic
   stop
 
+# --- Medical advice check ---
+
 define user ask medical advice
   "what medicine should I take"
+  "what medication is good for"
   "is my diagnosis serious"
   "what treatment do you recommend"
+  "should I get surgery"
+  "what are the symptoms of"
+  "how do I treat this injury"
+  "is this condition dangerous"
+  "what doctor should I see"
+  "should I be worried about my health"
+  "what is the cure for"
 
 define bot refuse medical advice
-  "I'm not able to provide medical advice. For medical guidance, please consult a qualified doctor. I can help you with the documentation required for your health insurance claim."
+  "I'm not able to provide medical advice. For medical guidance, please consult a qualified doctor. I can help you with the documentation required for your health insurance claim — would you like to continue?"
 
 define flow check medical advice
   user ask medical advice
   bot refuse medical advice
   stop
 
+# --- Investment and policy sales check ---
+
 define user ask investment advice
   "which insurance policy should I buy"
+  "which insurance plan is best"
   "compare insurance plans"
   "which insurer is best"
+  "which company has the lowest premium"
+  "should I buy term or whole life"
+  "is LIC better than HDFC"
+  "recommend an insurance product"
+  "which is better Star Health or Niva Bupa"
+  "help me choose a policy"
+  "which plan gives highest returns"
 
 define bot refuse investment advice
-  "I'm not able to recommend specific insurance products or companies. For policy comparisons, please visit your insurer's website or consult an IRDAI-registered insurance advisor."
+  "I'm not able to recommend specific insurance products or companies. For policy comparisons, please visit your insurer's official website or consult an IRDAI-registered insurance advisor. Is there anything related to your existing claim I can help you with?"
 
 define flow check investment advice
   user ask investment advice
   bot refuse investment advice
   stop
 
+# --- Legal advice check ---
+
+define user ask legal advice
+  "can I sue the insurance company"
+  "should I take legal action"
+  "is this legal"
+  "what are my legal rights outside insurance"
+  "help me draft a legal notice"
+  "can I file a court case"
+  "what does the law say about"
+  "help me with a lawsuit"
+
+define bot refuse legal advice
+  "I'm not able to provide legal advice unrelated to insurance claims. For legal matters, please consult a qualified lawyer. For insurance-related grievances, I can guide you through the IRDAI Grievance Redressal process — would that help?"
+
+define flow check legal advice
+  user ask legal advice
+  bot refuse legal advice
+  stop
+
+
+# ─── OUTPUT RAILS ─────────────────────────────────────────────────────────────
+# These flows run on the bot's generated response before it is returned to the user.
+
 define flow check output for hallucination
-  $output = execute check_hallucination(response=$bot_response)
-  if $output.has_hallucination
-    bot say "I want to make sure I give you accurate information. Based on the documents I have, I cannot confirm that detail. Please verify this directly with your insurer."
+  $result = execute check_hallucination(response=$bot_response)
+  if $result.flagged
+    bot say "I want to make sure I give you accurate information. Based on the documents provided, I cannot confirm that specific detail. Please verify this directly with your insurer."
     stop
 
 define flow check output for non-indian regulations
-  $output = execute check_jurisdiction(response=$bot_response)
-  if $output.non_indian
+  $result = execute check_jurisdiction(response=$bot_response)
+  if $result.flagged
     bot say "I can only provide guidance based on Indian insurance regulations and IRDAI guidelines."
+    stop
+
+define flow check output for insurer recommendation
+  $result = execute check_insurer_recommendation(response=$bot_response)
+  if $result.flagged
+    bot say "I'm not able to recommend specific insurance companies or products. For guidance on choosing a policy, please consult an IRDAI-registered insurance advisor."
     stop

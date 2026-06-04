@@ -501,3 +501,37 @@ def build_graph():
     checkpointer = get_checkpointer()
     checkpointer.setup()
     return graph.compile(checkpointer=checkpointer)
+
+
+# ─── Singleton accessor ───────────────────────────────────────────────────────
+
+_compiled_graph = None
+
+
+def get_graph():
+    """Return the compiled LangGraph graph, building it once on first call."""
+    global _compiled_graph
+    if _compiled_graph is None:
+        _compiled_graph = build_graph()
+    return _compiled_graph
+
+
+def make_initial_state(user_id: str, case_id: str, message: str) -> dict:
+    """Build the full initial ClaimState for a brand-new case thread."""
+    return {
+        "user_id": user_id,
+        "case_id": case_id,
+        "intent": "",
+        "required_docs": [],
+        "collected_docs": [],
+        "pending_docs": [],
+        "conversation_history": [],
+        "case_status": "active",
+        "is_new_user": True,
+        "current_query": message,
+        "last_response": None,
+        "input_type": "text",
+        "claim_subtype": None,
+        "awaiting_subtype": False,
+        "last_uploaded_doc": None,
+    }

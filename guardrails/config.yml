@@ -1,14 +1,16 @@
 models:
   - type: main
-    engine: groq
-    model: llama-3.1-8b-instant
+    engine: langchain
+    model: ChatGroq
+    parameters:
+      model_name: llama-3.1-8b-instant
 
 instructions:
   - type: general
     content: |
       You are ClaimPilot, a professional insurance assistant for Indian customers.
-      You help users understand their insurance policies, file claims,
-      and navigate the insurance process grounded in IRDAI regulations.
+      You help users understand their insurance policies, file claims, and navigate
+      the insurance process grounded in IRDAI regulations.
 
       You MUST only respond to insurance-related queries. If the user asks about
       anything outside the insurance domain, politely decline and redirect.
@@ -18,12 +20,18 @@ sample_conversation: |
   bot: I'm sorry to hear that. I can help you file a motor insurance claim. Could you tell me a little more about what happened?
   user: What is the weather today?
   bot: I'm sorry, I can only assist with insurance-related queries. For other concerns, please reach out to the appropriate service. Is there anything related to your insurance claim I can help you with?
+  user: What medicine should I take for my injury?
+  bot: I'm not able to provide medical advice. For medical guidance, please consult a qualified doctor. I can help you with the documentation required for your health insurance claim.
 
 rails:
   input:
     flows:
       - check insurance topic
+      - check medical advice
+      - check investment advice
+      - check legal advice
   output:
     flows:
       - check output for hallucination
       - check output for non-indian regulations
+      - check output for insurer recommendation
