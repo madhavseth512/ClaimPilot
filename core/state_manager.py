@@ -211,6 +211,33 @@ def intent_classification_node(state: ClaimState) -> dict:
                 ],
             }
 
+        # Check if user is rejecting / correcting the classified intent
+        _REJECTION_WORDS = {"no", "not", "wrong", "incorrect", "mistake", "alive",
+                            "living", "she is fine", "he is fine", "not dead",
+                            "didn't die", "did not die", "isn't dead", "is not dead"}
+        msg_lower = message.lower()
+        is_rejection = any(w in msg_lower for w in _REJECTION_WORDS)
+
+        if is_rejection:
+            response = (
+                "I apologise for the misunderstanding! Let me start over.\n"
+                "Could you describe your situation again? "
+                "For example — was this related to a health issue, a vehicle, "
+                "or something else?"
+            )
+            return {
+                "intent": "",
+                "required_docs": [],
+                "pending_docs": [],
+                "awaiting_subtype": False,
+                "claim_subtype": None,
+                "last_response": response,
+                "conversation_history": [
+                    {"role": "user", "content": message},
+                    {"role": "assistant", "content": response},
+                ],
+            }
+
         # Could not detect sub-type — ask again
         question = SUBTYPE_QUESTIONS.get(state["intent"], "")
         response = f"I didn't quite catch that. {question}"

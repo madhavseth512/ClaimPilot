@@ -9,12 +9,19 @@ INTENT_CLASSIFICATION_PROMPT = """You are an insurance intent classifier.
 Given the user's description of their situation, classify it into
 exactly one of these insurance intents:
 
-- motor_claim: vehicle accident, theft, damage
-- health_claim: hospitalisation, surgery, medical diagnosis
-- life_insurance: death claim, policy surrender, nominee filing
-- travel_insurance: baggage loss, trip cancellation, medical abroad
+- motor_claim: vehicle accident, theft, damage to vehicle
+- health_claim: hospitalisation, surgery, illness, disease, medical treatment,
+                health insurance policy claim (even if the user says "health insurance")
+- life_insurance: death claim, policy surrender, nominee filing — ONLY when someone has died
+- travel_insurance: baggage loss, trip cancellation, medical expenses abroad
 - home_property: fire, flood, burglary, property damage
 - personal_accident: injury, workplace accident, disability, accidental death
+
+IMPORTANT RULES:
+- If the user explicitly mentions "health insurance", classify as health_claim.
+- Only use life_insurance if the person has actually died or the claim is about a death.
+- "My mother was sick / hospitalised / had a disease" → health_claim, not life_insurance.
+- "I was injured but my car is fine" → personal_accident, not motor_claim.
 
 Respond ONLY in this JSON format:
 {

@@ -26,7 +26,11 @@ ALLOWED        — insurance claims, policy queries, IRDAI regulations, document
                  or any message where the insurance intent is unclear (when in doubt → ALLOWED)
 BLOCK_OFFTOPIC — explicitly and clearly unrelated to insurance (weather forecast, jokes, movies,
                  cooking recipes, sports scores, coding help, travel recommendations, etc.)
-BLOCK_MEDICAL  — requesting medical diagnosis, treatment advice, or medication recommendations
+BLOCK_MEDICAL  — explicitly requesting medical diagnosis, treatment advice, or medication
+                 recommendations (e.g. "what medicine should I take?", "is my condition serious?").
+                 Do NOT block descriptions of medical events shared as insurance context
+                 (e.g. "my mother was sick", "I was hospitalised", "she had a disease") —
+                 these are ALLOWED because they describe an insurance claim situation.
 BLOCK_INVEST   — asking to compare, recommend, or rank specific insurance companies or products
 BLOCK_LEGAL    — requesting legal advice unrelated to insurance grievance/ombudsman processes
 
