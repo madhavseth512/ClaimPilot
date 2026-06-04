@@ -2,8 +2,8 @@
 Token management and password hashing for ClaimPilot auth.
 Tokens are stored in-memory (lost on server restart — acceptable for demo).
 """
-import hashlib
 import secrets
+import bcrypt
 from fastapi import HTTPException
 
 # token → user_id
@@ -11,11 +11,11 @@ _tokens: dict[str, str] = {}
 
 
 def hash_password(password: str) -> str:
-    return hashlib.sha256(password.encode()).hexdigest()
+    return bcrypt.hashpw(password.encode(), bcrypt.gensalt()).decode()
 
 
 def verify_password(password: str, stored_hash: str) -> bool:
-    return hash_password(password) == stored_hash
+    return bcrypt.checkpw(password.encode(), stored_hash.encode())
 
 
 def create_token(user_id: str) -> str:

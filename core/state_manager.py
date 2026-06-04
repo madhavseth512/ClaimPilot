@@ -188,6 +188,27 @@ def intent_classification_node(state: ClaimState) -> dict:
     # ── Handle sub-type answer ────────────────────────────────────────────────
     if state.get("awaiting_subtype") and message:
         intent = state["intent"]
+
+        # Acknowledgement while awaiting sub-type — skip sub-type, proceed with base docs
+        if _is_acknowledgement(message):
+            pending = state.get("pending_docs", [])
+            if pending:
+                response = (
+                    f"Of course! Let's get started with your documents.\n\n"
+                    f"First, I'll need your {pending[0]}.\n"
+                    "Please upload it when you are ready."
+                )
+            else:
+                response = "Let's continue. What would you like to do next?"
+            return {
+                "awaiting_subtype": False,
+                "last_response": response,
+                "conversation_history": [
+                    {"role": "user", "content": message},
+                    {"role": "assistant", "content": response},
+                ],
+            }
+
         subtype = _detect_subtype(intent, message)
 
         if subtype:

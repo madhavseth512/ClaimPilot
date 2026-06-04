@@ -22,6 +22,9 @@ IMPORTANT RULES:
 - Only use life_insurance if the person has actually died or the claim is about a death.
 - "My mother was sick / hospitalised / had a disease" → health_claim, not life_insurance.
 - "I was injured but my car is fine" → personal_accident, not motor_claim.
+- "Fell sick / got ill while travelling abroad / overseas / in another country" → travel_insurance. Medical expenses during international travel are a travel insurance claim, not health_claim.
+- "Met with an accident and was hospitalised" → personal_accident. Hospitalisation caused by an accident is personal_accident. Only use health_claim when illness/condition is NOT caused by an accident.
+- When both accident AND hospitalisation are mentioned → personal_accident takes priority over health_claim.
 
 Respond ONLY in this JSON format:
 {

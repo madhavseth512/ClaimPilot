@@ -16,7 +16,7 @@ from guardrails.runner import check_input
 
 
 def run(coro):
-    return asyncio.get_event_loop().run_until_complete(coro)
+    return asyncio.new_event_loop().run_until_complete(coro)
 
 
 # ═══════════════════════════════════════════════════════════════════════════════

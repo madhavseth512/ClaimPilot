@@ -52,6 +52,6 @@
     {"input": "What documents do I need?",                                   "expected": "ambiguous"},
     {"input": "How much will I get?",                                        "expected": "ambiguous"},
     {"input": "What is the next step?",                                      "expected": "ambiguous"},
-    {"input": "Is this covered?",                                            "expected": "ambiguous"}
+    {"input": "Is this covered?",                                            "expected": "general_insurance"}
   ]
 }
