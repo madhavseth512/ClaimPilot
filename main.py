@@ -27,8 +27,8 @@ app.include_router(chat.router, prefix="/chat", tags=["chat"])
 app.include_router(upload.router, prefix="/upload", tags=["upload"])
 app.include_router(cases.router, prefix="/cases", tags=["cases"])
 
-if os.path.exists("frontend"):
-    app.mount("/", StaticFiles(directory="frontend", html=True), name="frontend")
+if os.path.exists("frontend/dist"):
+    app.mount("/", StaticFiles(directory="frontend/dist", html=True), name="frontend")
 
 
 if __name__ == "__main__":
