@@ -43,3 +43,9 @@ logs/
 # Frontend
 frontend/node_modules/
 frontend/dist/
+
+# Internal project docs (keep locally, not in remote repo)
+CLAUDE.md
+ARCHITECTURE.md
+TECHSTACK.md
+TODO.md
