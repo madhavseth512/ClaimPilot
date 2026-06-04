@@ -222,6 +222,23 @@ def intent_classification_node(state: ClaimState) -> dict:
             ],
         }
 
+    # ── Greetings / social messages — respond warmly without classifying ────────
+    _GREETINGS = {"hi", "hello", "hey", "namaste", "good morning", "good evening",
+                  "good afternoon", "hii", "hello dear", "hi there", "hey there"}
+    if message.strip().lower() in _GREETINGS or len(message.split()) <= 2:
+        response = (
+            "Hello! I'm here to help you with your insurance claim.\n"
+            "Could you tell me what brings you here today?\n"
+            "For example — \"I had a car accident\" or \"I was hospitalised last week.\""
+        )
+        return {
+            "last_response": response,
+            "conversation_history": [
+                {"role": "user", "content": message},
+                {"role": "assistant", "content": response},
+            ],
+        }
+
     # ── Classify intent ───────────────────────────────────────────────────────
     classifier = IntentClassifier()
     result = classifier.classify(message)
@@ -362,15 +379,66 @@ def document_processing_node(state: ClaimState) -> dict:
     }
 
 
+_ACKNOWLEDGEMENTS = {
+    "ok", "okay", "thanks", "thank you", "thank", "got it", "understood",
+    "alright", "sure", "noted", "great", "good", "fine", "perfect", "nice",
+    "i see", "i understand", "makes sense", "sounds good", "cool",
+}
+
+def _is_acknowledgement(text: str) -> bool:
+    """Returns True for short acknowledgment messages that need no routing."""
+    clean = text.strip().lower().rstrip(".,!?")
+    if clean in _ACKNOWLEDGEMENTS:
+        return True
+    words = clean.split()
+    return len(words) <= 4 and all(
+        w.rstrip(".,!?") in _ACKNOWLEDGEMENTS for w in words
+    )
+
+
 def query_handling_node(state: ClaimState) -> dict:
     from core.query_router import QueryRouter
     from agents.query_responder import QueryResponder
 
     query = state.get("current_query", "")
+    pending = state.get("pending_docs", [])
+    history = state.get("conversation_history", [])
+    intent_label = state.get("intent", "").replace("_", " ")
+
+    # Short acknowledgements ("ok", "thanks", "got it") don't need LLM routing —
+    # just confirm and redirect to the pending document.
+    if _is_acknowledgement(query):
+        if pending:
+            answer = (
+                f"Of course! Coming back to your claim — I still need your {pending[0]}.\n"
+                "Please upload it when you are ready."
+            )
+        else:
+            answer = (
+                f"You're welcome! Your {intent_label} claim documents are all in order.\n"
+                "Is there anything else I can help you with?"
+            )
+        return {
+            "last_response": answer,
+            "conversation_history": [
+                {"role": "user", "content": query},
+                {"role": "assistant", "content": answer},
+            ],
+        }
+
     routing = QueryRouter().route(query)
     category = routing.get("category", "ambiguous")
-    history = state.get("conversation_history", [])
     responder = QueryResponder()
+
+    # Build context-aware system note so IRDAI responses stay consistent
+    # with the already-classified intent and pending documents.
+    intent_context = ""
+    if state.get("intent") and state["intent"] != "unknown":
+        intent_context = (
+            f"\n\nNote: The user has an active {intent_label} claim. "
+            f"Pending documents: {', '.join(pending) if pending else 'none'}. "
+            "Ensure your answer is consistent with this context."
+        )
 
     if category == "personal_doc":
         answer = responder.respond_from_user_docs(
@@ -381,7 +449,7 @@ def query_handling_node(state: ClaimState) -> dict:
         )
     elif category == "general_insurance":
         answer = responder.respond_from_irdai(
-            query=query,
+            query=query + intent_context,
             conversation_history=history,
         )
     elif category == "off_topic":
@@ -390,16 +458,14 @@ def query_handling_node(state: ClaimState) -> dict:
             "For other concerns, please reach out to the appropriate service.\n"
             "Is there anything related to your insurance claim I can help you with?"
         )
-    else:  # ambiguous
-        answer = (
-            "I want to make sure I understand your question correctly. "
-            "Could you provide a bit more detail — are you asking about your "
-            "specific policy documents, or a general insurance question?"
+    else:  # ambiguous — treat as general insurance rather than dead-ending the user
+        answer = responder.respond_from_irdai(
+            query=query + intent_context,
+            conversation_history=history,
         )
 
     # Remind user of pending document after answering
-    pending = state.get("pending_docs", [])
-    if pending and category not in ("off_topic", "ambiguous"):
+    if pending and category not in ("off_topic",):
         answer += (
             f"\n\nI hope that answers your question. "
             f"Coming back to your claim — I still need your {pending[0]}. "
